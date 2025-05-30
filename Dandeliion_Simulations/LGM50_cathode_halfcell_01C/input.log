@@ -1,0 +1,63 @@
+
+Cell-related parameters from cell.txt:
+t_max	= 47000
+V_max	= 4.2
+dt_max	= 15
+V_min	= 2
+E_a	= 17100
+I0	= 0.000738
+Ncells	= 1
+c0	= 1000
+Rc	= 0
+T_ref	= 298.15
+T	= 298.15
+tplus	= 0.259
+
+Anode parameters from anode.txt:
+r_left	= 1
+k0	= 1e-07
+E_a	= 35000
+sigma_s	= 215
+x_r	= 0.5
+cs0	= 2e+06
+cmax	= 5e+06
+B	= 1000
+bet	= 383959
+M	= 30
+N	= 30
+L	= 1e-08
+R	= 0.001
+el	= 0.25
+r_right	= 1
+A	= 0.0001767
+
+Cathode parameters from cathode.txt:
+r_left	= 1
+k0	= 3.545e-11
+E_a	= 17800
+sigma_s	= 0.18
+x_r	= 0.5
+cs0	= 47023.3
+cmax	= 51765
+B	= 0.1939
+bet	= 382184
+M	= 30
+N	= 30
+L	= 7.56e-05
+R	= 5.22e-06
+el	= 0.335
+r_right	= 1
+A	= 0.0001767
+
+Separator parameters from separator.txt:
+B	= 0.3222
+el	= 0.47
+A	= 0.0001767
+N	= 20
+L	= 1.2e-05
+
+Output parameters from output.txt:
+cs_x	= 0 0.25 0.5 0.75 1
+verbose	= 2
+t	= 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000 11000 12000 13000 14000 15000 16000 17000 18000 19000 20000 21000 22000 23000 24000 25000 26000 27000 28000 29000 30000 31000 32000 33000 34000 35000 36000
+format	= tab
