@@ -1,6 +1,7 @@
 
 import requests, zipfile, io, os
 import autograd.numpy as anp # For analytic gradients, we're using autograd.numpy operations
+from autograd import elementwise_grad
 import pandas as pd
 # Making sure Dandeliion's pow function is evaluated in the autograd.numpy namespace:
 dandel_dict = anp.__dict__.copy()
@@ -22,7 +23,7 @@ def extract_field(para_url, field_id):
     func_str = raw_bytes.decode('utf-8').replace('\r','').replace('\n',' ')
     return func_str
 
-def fetch_dandeliion(url, file_id, save_dir=None):
+def fetch_dandeliion(url, file_id, save_dir=None, compute_gradients=False, force=False):
     """
     For a Dandeliion simulation, fetch and extract the data_and_plt_files.zip file, and
     save diffusivity functions, open circuit voltage and current time series used in the
@@ -32,7 +33,8 @@ def fetch_dandeliion(url, file_id, save_dir=None):
     url: The url of the Dandeliion run
     file_id: identifier for simulation (used as subdirectory name)
     save_dir: The directory to save the subdirectory in (default: current dir)
-    
+    compute_gradients: bool, if True, also returns gradients of diffusivity functions (not tested)
+    force: bool, if True the data files will be downloaded even if there's an existing copy.
     
     Returns:
     Dictionary with following keys:
@@ -86,7 +88,7 @@ def fetch_dandeliion(url, file_id, save_dir=None):
     t               - User-defined times for output [s]    
     
    
-    If the simulation was already saved, uses the local copy.
+    If the simulation was already saved, uses the local copy (unless force=True).
     """
 
     if save_dir is None:
@@ -98,7 +100,7 @@ def fetch_dandeliion(url, file_id, save_dir=None):
     
     sim_dict=dict() # This is where everything will be stored.
                     
-    if os.path.exists(cache_file):
+    if os.path.exists(cache_file) and not force:
         print(f"Simulation \033[1;34m{file_id}\033[0m already in \033[1;31m{save_dir}\033[0m. Using local copy.")
         # Load already existing cached data. Analytic functions stored as strings
         cache_data = anp.load(cache_file, allow_pickle=True)
@@ -154,13 +156,23 @@ def fetch_dandeliion(url, file_id, save_dir=None):
     # Reconstruct functions and set up dictionary
     
     sim_dict['sigma_e'] = lambda x: eval(sigma_e_str, dandel_dict, {'x': x})
-    sim_dict['D_e'] = lambda x: eval(D_e_str, dandel_dict, {'x': x}) * 1e-4
-    sim_dict['D_a'] = lambda x: eval(D_a_str, dandel_dict, {'x': x}) * 1e-4
-    sim_dict['D_c'] = lambda x: eval(D_c_str, dandel_dict, {'x': x}) * 1e-4
     sim_dict['Ueq_a']= lambda x: eval(Ueq_a_str, dandel_dict, {'x': x})
     sim_dict['Ueq_c'] = lambda x: eval(Ueq_c_str, dandel_dict, {'x': x})
     sim_dict['I_sub'] = I_sub
-    
+
+    D_e = lambda x: eval(D_e_str, dandel_dict, {'x': x}) * 1e-4
+    D_a = lambda x: eval(D_a_str, dandel_dict, {'x': x}) * 1e-4
+    D_c = lambda x: eval(D_c_str, dandel_dict, {'x': x}) * 1e-4
+    sim_dict['D_e'] = D_e
+    sim_dict['D_a'] = D_a
+    sim_dict['D_c'] = D_c
+
+    # Might need the derivatives of the diffusivities:
+    if compute_gradients:
+        sim_dict['D_e_prime'] = elementwise_grad(D_e)
+        sim_dict['D_a_prime'] = elementwise_grad(D_a)
+        sim_dict['D_c_prime'] = elementwise_grad(D_c)
+
     # Read Dandeliion current/voltage data
     sim_dict['t_data'], sim_dict['V_data'] = anp.loadtxt(os.path.join(data_path,"voltage.dat"), delimiter='\t',skiprows=1, usecols=[0,2]).T
     sim_dict['I_data'] = anp.loadtxt(os.path.join(data_path,"current_total.dat"), delimiter='\t',skiprows=1, usecols=[1])

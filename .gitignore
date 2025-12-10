@@ -14,3 +14,6 @@ venv/
 
 *.egg-info/
 .DS_Store
+
+# Ignore the saved simulation data
+Dandeliion_Simulations/

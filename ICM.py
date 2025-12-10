@@ -533,6 +533,7 @@ def predict_with_range(D, D_prime, j, Ueq, c0, t_data, V_data, x_data, idx_in, N
     elif csol.status==1:
         # Early termination
         idx_extrapolate = np.where(csol.t[-1] <t_data)[0][0]
+        return_dict['idx_cut'] = idx_extrapolate
     else:
         print("Integration failed. See for yourself")
         return return_dict
